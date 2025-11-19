@@ -48,22 +48,18 @@ class BatchProcessor:
         if os.path.exists(self.out_path):
             prev = pd.read_csv(self.out_path)
             for _, r in prev.iterrows():
-                self.processed[str(r.get('CID'))] = True
+                self.processed[str(r.get('smiles'))] = True
 
         for i in tqdm(indices[self.current_index:], total=len(indices) - self.current_index):
             if not self.running:
                 break
 
-            cid = cid_list[i]
-            if str(cid) in self.processed:
-                continue
-
             smiles = smiles_list[i]
-            name, desc = self.get_annotation_by_cid(cid)  # Placeholder for actual annotation retrieval logic
+            cid, name, desc = self.get_annotation_by_smiles(smiles)  # Placeholder for actual annotation retrieval logic
 
             if name or desc:
                 self.results.append({"CID": cid, "SMILES": smiles, "name": name, "description": desc})
-                self.processed[str(cid)] = True
+                self.processed[str(smiles)] = True
 
             if len(self.results) >= self.save_every:
                 self.save_results()
@@ -83,6 +79,6 @@ class BatchProcessor:
         if final:
             print(f"Final results saved to {self.out_path}.") 
 
-    def get_annotation_by_cid(self, cid):
+    def get_annotation(self, cid):
         # Placeholder for the actual implementation of fetching annotation by CID
         return None, None  # Replace with actual logic to fetch name and description
