@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pubchem-annotation-batch"
+version = "0.1.0"
+description = "A batch processing tool for fetching annotations from the PubChem API."
+authors = ["Your Name <youremail@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.25.1"
+pandas = "^1.2.3"
+tqdm = "^4.59.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

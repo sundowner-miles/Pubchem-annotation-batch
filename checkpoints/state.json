@@ -1,0 +1,10 @@
+{
+    "current_state": {
+        "processed_cids": [],
+        "total_cids": 0,
+        "last_processed_index": -1,
+        "is_running": false,
+        "start_time": null,
+        "end_time": null
+    }
+}

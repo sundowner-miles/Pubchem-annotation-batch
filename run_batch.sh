@@ -1,0 +1,1 @@
+python run_batch_main.py --file "D:\桌面\about大学\科研\中药\smile-text\ITCM\Herb-Ingredient_csmiles_replaced.csv" --verbose
