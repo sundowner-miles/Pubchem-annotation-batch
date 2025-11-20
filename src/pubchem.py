@@ -150,13 +150,13 @@ def fetch_annotation_by_smiles(smiles, retries=3, backoff=1.5, verbose=False):
 
     # ==================== 新增：SMILES 预处理与校验 ====================
     if smiles is None:
-        return None, None
+        return None, None, None
     smiles_str = str(smiles).strip()
     # 过滤无效 SMILES（空值、纯空格、nan/None）
     if not smiles_str or smiles_str.lower() in {"nan", "none"}:
         if verbose:
             print("无效 SMILES：空值或非法字符串")
-        return None, None
+        return None, None, None
     # 简单清洗：去除 SMILES 中的非法字符（如引号、换行符）
     smiles_str = re.sub(r'["\n\r\t]', '', smiles_str)
     if verbose:
@@ -377,7 +377,7 @@ def process_annotations(file_path,
         return None
 
     cid_col = find_col(cid_name, keywords=['cid', 'pubchem']) if cid_name is not None else None
-    smiles_col = find_col(smiles_name, keywords=['smiles', 'csmiles', 'smile']) if smiles_name is not None else None
+    smiles_col = find_col(smiles_name, keywords=['smiles', 'csmiles', 'smile', 'cleaned_smiles']) if smiles_name is not None else None
     if cid_col is None and smiles_col is None:
         raise KeyError(f"找不到列。期望: '{cid_name}' 和 '{smiles_name}'。可用列: {df.columns.tolist()}")
 
@@ -400,17 +400,43 @@ def process_annotations(file_path,
     if start_idx < 0:
         start_idx = 0
 
-    # 读取已处理 smiles，跳过已完成部分（根据输出文件中的 smiles 列）
     processed = set()
     header_needed = True
+    # 确保 out_path 有默认值
+    if out_path is None:
+        out_path = os.path.splitext(file_path)[0] + "_smiles_annotation关联结果.csv"
+    def _norm_smi(s):
+        if s is None:
+            return ""
+        try:
+            if pd.isna(s):
+                return ""
+        except Exception:
+            pass
+        s2 = str(s).strip()
+        # 去除常见的包裹符号
+        if (s2.startswith('"') and s2.endswith('"')) or (s2.startswith("'") and s2.endswith("'")):
+            s2 = s2[1:-1].strip()
+        return s2
+
     if os.path.exists(out_path):
         try:
             prev = pd.read_csv(out_path, encoding='utf-8-sig')
+            # 智能识别 SMILES 列名
+            smi_col = None
+            for c in prev.columns:
+                lc = str(c).lower()
+                if 'smiles' in lc or lc == 'smi' or 'smi' in lc:
+                    smi_col = c
+                    break
+            if smi_col is None:
+                # fallback to first column named exactly 'SMILES' or 2nd column
+                smi_col = 'SMILES' if 'SMILES' in prev.columns else prev.columns[0]
             for _, r in prev.iterrows():
-                processed.add(str(r.get('smiles')))
+                processed.add(_norm_smi(r.get(smi_col)))
             header_needed = False
             if verbose:
-                print(f"已加载 {len(prev)} 现有结果，将跳过这些 CIDs。")
+                print(f"已加载 {len(prev)} 现有结果，将跳过这些 SMILES。")
         except Exception:
             if verbose:
                 print("无法读取已存在的输出文件，重新从头开始写入。")
@@ -461,9 +487,16 @@ def process_annotations(file_path,
     if verbose:
         print("Output CSV path:", out_path)
 
-
+    # 主循环
     for i in pbar:
         smiles = smiles_list[i]
+        # 归一化并跳过已处理的
+        nsmi = _norm_smi(smiles)
+        if nsmi in processed:
+            if verbose:
+                print(f"跳过已处理 SMILES (index {i}): {nsmi}")
+            continue
+
         cid, name, description = fetch_annotation_by_smiles(smiles, verbose=verbose)
 
         if name or description:
