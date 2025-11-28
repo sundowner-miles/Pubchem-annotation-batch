@@ -4,6 +4,47 @@ This project provides a batch processing tool for retrieving annotations from th
 
 ## Project Structure
 
+```
+pubchem-annotation-batch
+├─ checkpoints
+│  └─ state.json
+├─ data
+│  ├─ inputs
+│  │  ├─ Herb-Ingredient_csmiles_replaced_processed(TCMM).csv
+│  │  └─ Herb-Ingredient_with_validation.csv
+│  └─ output
+├─ file1.txt
+├─ notebooks
+│  └─ get_annotation.ipynb
+├─ output
+│  ├─ smiles_annotation关联结果(TCMM).csv
+│  └─ smiles_annotation关联结果.csv
+├─ pyproject.toml
+├─ README.md
+├─ requirements.txt
+├─ run_batch.sh
+├─ run_batch_main(TCMM).py
+├─ run_batch_main.py
+├─ scripts
+├─ src
+│  ├─ cli.py
+│  ├─ config.py
+│  ├─ processor.py
+│  ├─ pubchem.py
+│  ├─ storage.py
+│  ├─ utils.py
+│  ├─ __init__.py
+│  └─ __pycache__
+│     ├─ pubchem.cpython-311.pyc
+│     ├─ pubchem.cpython-38.pyc
+│     ├─ __init__.cpython-311.pyc
+│     └─ __init__.cpython-38.pyc
+└─ tests
+   ├─ test_processor.py
+   └─ test_visit.ipynb
+
+```
+
 - **src/**: Contains the main application code.
   - **cli.py**: Command-line interface for user interaction.
   - **processor.py**: Manages the batch processing of annotations.
@@ -60,11 +101,3 @@ bash scripts/run_batch.sh
 - Manual interruption and resumption of the process.
 - Error handling and retry logic for API requests.
 - State management to save progress and resume later.
-
-## Contributing
-
-Contributions are welcome! Please submit a pull request or open an issue for any enhancements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
